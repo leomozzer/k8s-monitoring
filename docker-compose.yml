@@ -1,0 +1,112 @@
+version: '3'
+
+networks:
+  monitor-net:
+    driver: bridge
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+  my-db: {}
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:5.7
+    restart: always
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    environment:
+      MYSQL_DATABASE: 'db'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'user'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: 'password'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: '1234'
+    ports:
+      # <Port exposed> : < MySQL Port running inside container>
+      - '3306:3306'
+    expose:
+      # Opens port 3306 on the container
+      - '3306'
+      # Where our data will be persisted
+    volumes:
+      - my-db:/var/lib/mysql
+    networks:
+      - monitor-net
+
+  # nodeexporter:
+  #   image: prom/node-exporter:latest
+  #   container_name: nodeexporter
+  #   user: root
+  #   privileged: true
+  #   volumes:
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - /:/rootfs:ro
+  #   command:
+  #     - '--path.procfs=/host/proc'
+  #     - '--path.sysfs=/host/sys'
+  #     - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+  #   restart: unless-stopped
+  #   expose:
+  #     - 9100
+  #   ports:
+  #     - "9100:9100"      
+  #   networks:
+  #     - monitor-net
+  # grafana:
+  #  image: grafana/grafana:latest
+  #  container_name: grafana
+  #  volumes:
+  #    - grafana_data:/var/lib/grafana
+  #    - ./grafana/datasources:/etc/grafana/datasources
+  #    - ./grafana/dashboards:/etc/grafana/dashboards
+  #    - ./grafana/setup.sh:/setup.sh
+  #  entrypoint: /setup.sh
+  #  environment:
+  #    - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+  #    - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+  #    - GF_USERS_ALLOW_SIGN_UP=false
+  #  restart: unless-stopped
+  #  expose:
+  #    - 5000
+  #  ports:
+  #    - 5000:5000
+  #  networks:
+  #    - monitor-net
+
+  app:
+    container_name: app
+    build:
+      context: ./app
+      dockerfile: dockerfile
+    expose:
+      - 3000
+    ports:
+      - "3000:3000"
+    networks:
+      - monitor-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention=200h'
+      - '--web.enable-lifecycle'
+    # restart: unless-stopped
+    expose:
+      - 9090
+    ports:
+      - "9090:9090"
+    networks:
+      - monitor-net
