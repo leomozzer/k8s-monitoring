@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodejs
+  namespace: application  # Replace with your Nginx namespace
+spec:
+  type: LoadBalancer
+  selector:
+    app: nodejs
+  ports:
+  - port: 80
+    targetPort: http

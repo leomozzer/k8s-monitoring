@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs
+  namespace: application  # Replace with your Nginx namespace
+spec:
+  selector:
+    matchLabels:
+      app: nodejs
+  template:
+    metadata:
+      labels:
+        app: nodejs
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: '/metrics'
+        prometheus.io/port: '3000'
+    spec:
+      containers:
+      - name: nodejs
+        image: nodejs
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: 64Mi
+            cpu: 128m
+        ports:
+        - containerPort: 3000
+          name: http
