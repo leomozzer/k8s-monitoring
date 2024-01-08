@@ -14,7 +14,7 @@ spec:
       annotations:
         prometheus.io/scrape: 'true'
         prometheus.io/path: '/metrics'
-        prometheus.io/port: '3000'
+        prometheus.io/port: '8080'
     spec:
       containers:
       - name: nodejs
@@ -25,5 +25,5 @@ spec:
             memory: 64Mi
             cpu: 128m
         ports:
-        - containerPort: 3000
+        - containerPort: 8080
           name: http
