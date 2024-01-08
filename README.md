@@ -29,7 +29,7 @@ NAME                                     READY   STATUS    RESTARTS   AGE
 grafana-7558b9c7b-c86gx                  1/1     Running   0          42m
 prometheus-deployment-57898c796b-vlvgk   1/1     Running   0          60m
 ```
-- Access the grafana with `kubectl port-forward grafana-7558b9c7b-c86gx 3000:3000 -n=monitoring`
+- Access the grafana with `kubectl port-forward grafana-7558b9c7b-c86gx 4000:4000 -n=monitoring`
 
 ## Monitoring Nginx
 - Create a namespace `kubectl create namespace nginx`
@@ -40,3 +40,26 @@ NAME                     READY   STATUS    RESTARTS   AGE
 nginx-68f44fcc46-jwd7f   1/1     Running   0          112s
 ```
 - Check if the Nginx is running `kubectl port-forward nginx-68f44fcc46-jwd7f 8080:80 9114:9113 -n nginx`
+
+## Monitoring Nodejs
+- Access the app folder `cd app`
+- Create a build image from the NodeJS application with `docker build -f Dockerfile -t nodejs`
+- Test if the application is running `docker run -p 3000:3000 nodejs`
+- Using Kind push the image to the cluster `kind load docker-image nodejs:latest --name kluster`
+- Create the application namespace `kubectl create namespace application`
+- Apply the kubernetes manifest files with `kubectl apply -f ./app/kubernetes -n application`
+- Check if it's fine with `kubectl get pods -n application`
+```bash
+NAME                          READY   STATUS    RESTARTS   AGE
+pod/nodejs-6bb568674c-f2vlf   1/1     Running   0          12m
+
+NAME             TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+service/nodejs   LoadBalancer   10.96.78.247   <pending>     80:31694/TCP   12m
+
+NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/nodejs   1/1     1            1           12m
+
+NAME                                DESIRED   CURRENT   READY   AGE
+replicaset.apps/nodejs-6bb568674c   1         1         1       12m
+```
+- Run the port forward with `kubectl port-forward nodejs-6bb568674c-f2vlf 3000:3000 -n application`
