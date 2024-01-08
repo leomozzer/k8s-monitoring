@@ -82,11 +82,11 @@ services:
     container_name: app
     build:
       context: ./app
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     expose:
-      - 3000
+      - 8080
     ports:
-      - "3000:3000"
+      - "8080:8080"
     networks:
       - monitor-net
 
