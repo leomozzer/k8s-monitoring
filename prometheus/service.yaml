@@ -4,14 +4,14 @@ metadata:
   name: prometheus
   namespace: monitoring
   annotations:
-      prometheus.io/scrape: 'true'
-      prometheus.io/port:   '9090'
-      prometheus.io/scheme: http
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/scheme: http
 spec:
-  selector: 
+  selector:
     app: prometheus-server
-  type: NodePort  
+  type: NodePort
   ports:
     - port: 8080
-      targetPort: 9090 
+      targetPort: 9090
       nodePort: 30000
